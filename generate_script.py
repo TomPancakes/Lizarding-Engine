@@ -39,22 +39,4 @@ def generate_script(prompt):
     )
     return response.text
 
-# def generate_script(prompt):
-#     client = genai.Client(api_key=os.getenv("GROK_API_KEY"))
-#     response = client.models.generate_content(
-#         model="gemini-2.5-flash",
-#         contents=prompt
-#     )
-#     return response.text
-
-# def generate_script(prompt):
-#     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-#     response = client.chat.completions.create(
-#         model="qwen/qwen3.6-27b",
-#         messages=[{"role": "user", "content": prompt}]
-#     )
-#     print("FINISH REASON:", response.choices[0].finish_reason)
-#     print("FULL MESSAGE OBJECT:", response.choices[0].message)
-
-#     return response.choices[0].message.content
 
