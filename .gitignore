@@ -1,0 +1,6 @@
+.env
+__pycache__
+characters.json
+media
+notes.txt
+
