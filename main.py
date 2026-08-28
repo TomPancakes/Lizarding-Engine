@@ -14,7 +14,7 @@ with open("characters.json", "r") as file:
 
 character = random.choice(characters["characters"])
 student = random.choice(characters["students"])
-concept = "How microwave ovens work?"  # hardcoded for now
+concept = "Why RAM is different from storage"  # hardcoded for now
 
 print(f"Using: {character['name']} + {student['name']}")
 
@@ -22,7 +22,7 @@ print(f"Using: {character['name']} + {student['name']}")
 # Generate Script Block
 ##
 
-preload = input("Do you want to query API or use the preloaded script (yes or no)")
+preload = input("Do you want to query API or use the preloaded script? (yes for query/no for preload) ")
 if preload == "yes":
     from generate_script import build_prompt, generate_script
     script_text = generate_script(build_prompt(character, student, concept))
@@ -82,6 +82,10 @@ for item in captions[:10]:
 
 from video import generate_clip
 
-generate_clip(video_id, captions)
+generate_clip(video_id, captions, character, student)
 
+
+
+
+## upload video block
 

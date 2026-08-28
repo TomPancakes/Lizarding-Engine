@@ -10,7 +10,7 @@ load_dotenv()
 def build_prompt(character, student, concept):
     return f"""Write a short dialogue script (~90 seconds spoken, 180-230 words)
 between a teacher and student explaining: "{concept}". 
-Aim to be entertaining and informative. Most speaking should be done by the teacher. 
+Aim to be entertaining, informative and easily-comprehensible. Most speaking should be done by the teacher. The student and teacher are familiar with eachother. 
 
 TEACHER: {character['name']}
 Personality: {character['personality']}
