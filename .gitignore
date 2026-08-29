@@ -3,4 +3,5 @@ __pycache__
 characters.json
 media
 notes.txt
-
+topics.json
+upload.py

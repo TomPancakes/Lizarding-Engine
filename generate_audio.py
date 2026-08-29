@@ -1,16 +1,21 @@
 import edge_tts
-import torchaudio as ta
-import torch
-from chatterbox.tts_turbo import ChatterboxTurboTTS
 from moviepy import AudioFileClip, concatenate_audioclips
 import asyncio
 import os
-
-
+from TTS.api import TTS
+import torch
 
 async def generate_audio(script_text, character, student, video_id):
 
-    model = ChatterboxTurboTTS.from_pretrained(device="cuda")
+    if character['voice']['provider'] == "chatterbox" or student['voice']['provider'] == "chatterbox": #load the turbo model IF to be used
+        import torchaudio as ta
+        from chatterbox.tts_turbo import ChatterboxTurboTTS
+        model = ChatterboxTurboTTS.from_pretrained(device="cpu")
+    if character['voice']['provider'] == "xtts" or student['voice']['provider'] == "xtts": #xtts setup if used
+        #device = "cuda" if torch.cuda.is_available() else "cpu"
+        tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=False)
+    
+        
 
     audio_files = []
     speaker_order = []
@@ -31,44 +36,53 @@ async def generate_audio(script_text, character, student, video_id):
             text_colour = student["colour"]
             provider = student["voice"]["provider"]
 
-
         else:
             continue #skip anything that doesn't match expected format
 
-        print(f"Generating: voice={voice_id} | Audio Line Number: {i}")
-        if provider == "chatterbox":
-            wav = model.generate(text, audio_prompt_path=voice_id)
-            ta.save(audio_path, wav, model.sr)
-        elif provider == "edge-tts":
+        if provider == "edge-tts":
+            print(f"Generating Line Numer {i} | with {voice_id}| VIA EDGETTS")
             tts = edge_tts.Communicate(text=text, voice=voice_id)
             await tts.save(audio_path)
             await asyncio.sleep(0.1) # pause to not overload server
+        elif provider == "chatterbox":
+            print(f"Generating Line Numer {i} | with {voice_id}| VIA CHATTERBOX")
+            wav = model.generate(text, audio_prompt_path=voice_id)
+            ta.save(audio_path, wav, model.sr)
+        elif provider == "xtts":
+            tts.tts_to_file(text=text,
+                file_path=audio_path,
+                speaker_wav=voice_id,
+                language="en")
 
-        speaker_order.append({"colour": text_colour})
-        audio_files.append(audio_path)
+        speaker_order.append({"colour": text_colour}) # speaker order looks like this ["green","green","blue","green","blue","green",]
+        audio_files.append(audio_path) #a list of each audio file path. 
 
-
-    # speaker order looks like this ["green","green","blue","green","blue","green",]
 
     clips = []
     cumulative_time = 0
-    i = 0
 
-    for file in audio_files: #assigns speaker order with colour AND 
-        clips.append(AudioFileClip(file))
-        speaker_order[i]["time"] = cumulative_time #add entry for cumulative time
-        cumulative_time += AudioFileClip(file).duration
-        i += 1
+    # Load each audio file and calculate speaker timings
+    for i, file in enumerate(audio_files):
 
+        clip = AudioFileClip(file)
+        clips.append(clip)
+        speaker_order[i]["time"] = cumulative_time
+        cumulative_time += clip.duration
 
+    # Combine all clips
     combined = concatenate_audioclips(clips)
-
     combined_path = f"media/audio/{video_id}/audio_{video_id}.wav"
     combined.write_audiofile(combined_path)
 
-    for file in audio_files: #remove all now unneeded invidiaul recordings leaving only combined
-        filename = os.path.basename(file)
-        if filename.startswith("student") or filename.startswith("teacher"):
+    # IMPORTANT: Close MoviePy clips so Windows releases the WAV files
+    combined.close()
+
+    for clip in clips:
+        clip.close()
+
+    # Now safely delete individual recordings
+    for file in audio_files:
+        if os.path.exists(file):
             os.remove(file)
 
     return speaker_order
