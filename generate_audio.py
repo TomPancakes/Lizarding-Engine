@@ -2,23 +2,33 @@ import edge_tts
 from moviepy import AudioFileClip, concatenate_audioclips
 import asyncio
 import os
-from TTS.api import TTS
-import torch
+
+import subprocess
+import json
+import tempfile
+
+CB_PYTHON = r"C:/Users/Tom\Desktop/Code Projects/Lizarding Engine/.venv_cb\Scripts/python.exe"
+CB_WORKER = r"C:/Users/Tom\Desktop/Code Projects/Lizarding Engine/chatterbox_worker.py"
+
+def run_chatterbox_batch(jobs):
+    """jobs = [{"text": ..., "output_path": ..., "voice_id": ...}, ...]"""
+    if not jobs:
+        return
+ 
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(jobs, f)
+        jobs_path = f.name
+ 
+    print(f"Sending {len(jobs)} lines to Chatterbox subprocess...")
+    subprocess.run([CB_PYTHON, CB_WORKER, jobs_path], check=True)
+    os.remove(jobs_path)
+
 
 async def generate_audio(script_text, character, student, video_id):
 
-    if character['voice']['provider'] == "chatterbox" or student['voice']['provider'] == "chatterbox": #load the turbo model IF to be used
-        import torchaudio as ta
-        from chatterbox.tts_turbo import ChatterboxTurboTTS
-        model = ChatterboxTurboTTS.from_pretrained(device="cpu")
-    if character['voice']['provider'] == "xtts" or student['voice']['provider'] == "xtts": #xtts setup if used
-        #device = "cuda" if torch.cuda.is_available() else "cpu"
-        tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=False)
-    
-        
-
     audio_files = []
     speaker_order = []
+    chatterbox_jobs = []
 
     for i, line in enumerate(script_text.splitlines()):
 
@@ -28,16 +38,15 @@ async def generate_audio(script_text, character, student, video_id):
             audio_path = f"media/audio/{video_id}/teacher{i}.wav"
             text_colour = character["colour"]
             provider = character["voice"]["provider"]
-
         elif line.startswith("STUDENT:"):
             text = line.removeprefix("STUDENT:").strip()
             voice_id = student["voice"]["voice_id"]
             audio_path = f"media/audio/{video_id}/student{i}.wav"
             text_colour = student["colour"]
             provider = student["voice"]["provider"]
-
         else:
             continue #skip anything that doesn't match expected format
+
 
         if provider == "edge-tts":
             print(f"Generating Line Numer {i} | with {voice_id}| VIA EDGETTS")
@@ -45,18 +54,17 @@ async def generate_audio(script_text, character, student, video_id):
             await tts.save(audio_path)
             await asyncio.sleep(0.1) # pause to not overload server
         elif provider == "chatterbox":
-            print(f"Generating Line Numer {i} | with {voice_id}| VIA CHATTERBOX")
-            wav = model.generate(text, audio_prompt_path=voice_id)
-            ta.save(audio_path, wav, model.sr)
-        elif provider == "xtts":
-            tts.tts_to_file(text=text,
-                file_path=audio_path,
-                speaker_wav=voice_id,
-                language="en")
+            # don't generate now - queue it up for the batch subprocess call below
+            chatterbox_jobs.append({
+                "text": text,
+                "output_path": audio_path,
+                "voice_id": voice_id
+            })
 
         speaker_order.append({"colour": text_colour}) # speaker order looks like this ["green","green","blue","green","blue","green",]
         audio_files.append(audio_path) #a list of each audio file path. 
 
+    run_chatterbox_batch(chatterbox_jobs) #generate all queued chatterbox lines
 
     clips = []
     cumulative_time = 0

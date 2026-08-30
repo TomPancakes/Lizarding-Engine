@@ -5,3 +5,7 @@ media
 notes.txt
 topics.json
 upload.py
+.venv
+*.pyc
+.venv_cb
+

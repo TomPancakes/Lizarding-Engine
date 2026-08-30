@@ -3,8 +3,6 @@ from dotenv import load_dotenv
 
 from google import genai
 
-from groq import Groq
-
 load_dotenv()
 
 def build_prompt(character, student, concept):
