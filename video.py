@@ -74,7 +74,7 @@ def generate_clip(video_id, captions, character, student):
     random_choice = random.choice(os.listdir("media/backgrounds/bg_music"))
     bg_music = AudioFileClip(f"media/backgrounds/bg_music/{random_choice}")
     bg_music = bg_music.subclipped(0, duration_in_seconds) #make bg music same length as video
-    bg_music = bg_music.with_volume_scaled(0.12) #lower volume
+    bg_music = bg_music.with_volume_scaled(0.08) #lower volume
 
     # Combine dialogue + music
     final_audio = CompositeAudioClip([

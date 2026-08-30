@@ -1,6 +1,0 @@
-python-dotenv
-google-genai
-edge-tts
-moviepy
-openai-whisper
-torch

@@ -22,6 +22,8 @@ Do not copy this example literally. Make the dialogue natural to the characters.
 TEACHER: {character['name']}
 Personality: {character['personality']}
 Speech style: {character['speech_style']}
+Lore/abilities: {character['lore/abilities']}
+Canononical Relationships: {character['relationships']}
 
 STUDENT: {student['name']}
 Personality: {student['personality']}
