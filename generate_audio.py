@@ -12,7 +12,7 @@ async def generate_audio(script_text, character, student, video_id):
     if character['voice']['provider'] == "chatterbox" or student['voice']['provider'] == "chatterbox": #load the nano model IF to be used
         import torchaudio as ta
         from chatterbox.tts_turbo import ChatterboxTurboTTS
-        model = ChatterboxTurboTTS.from_pretrained(device="cpu", nano=True)
+        model = ChatterboxTurboTTS.from_pretrained(device="cpu")
 
     for i, line in enumerate(script_text.splitlines()):
 
@@ -20,14 +20,14 @@ async def generate_audio(script_text, character, student, video_id):
             text = line.removeprefix("TEACHER:").strip()
             voice_id = character["voice"]["voice_id"]
             audio_path = f"media/audio/{video_id}/teacher{i}.wav"
-            text_colour = character["colour"]
             provider = character["voice"]["provider"]
+            speaker_order.append({"character_name": character["name"], "role": "teacher", "text": text}) #creates for captions use
         elif line.startswith("STUDENT:"):
             text = line.removeprefix("STUDENT:").strip()
             voice_id = student["voice"]["voice_id"]
             audio_path = f"media/audio/{video_id}/student{i}.wav"
-            text_colour = student["colour"]
             provider = student["voice"]["provider"]
+            speaker_order.append({"character_name": student["name"], "role": "student", "text": text}) #creates for captions use
         else:
             continue #skip anything that doesn't match expected format
 
@@ -42,19 +42,20 @@ async def generate_audio(script_text, character, student, video_id):
             wav = model.generate(text, audio_prompt_path=voice_id)
             ta.save(audio_path, wav, model.sr)
 
-        speaker_order.append({"colour": text_colour}) # speaker order looks like this ["green","green","blue","green","blue","green",]
         audio_files.append(audio_path) #a list of each audio file path. 
 
 
     clips = []
     cumulative_time = 0
 
-    # Load each audio file and calculate speaker timings
+    # Load each audio file and calculate speaker timings. Add to speaker order. 
     for i, file in enumerate(audio_files):
 
         clip = AudioFileClip(file)
         clips.append(clip)
-        speaker_order[i]["time"] = cumulative_time
+        speaker_order[i]["start"] = cumulative_time
+        speaker_order[i]["end"] = cumulative_time + clip.duration
+
         cumulative_time += clip.duration
 
     # Combine all clips

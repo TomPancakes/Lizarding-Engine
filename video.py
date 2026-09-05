@@ -1,5 +1,6 @@
 from moviepy import *
 import random
+from random import randint
 import os
 
 def generate_clip(video_id, captions, character, student):
@@ -7,10 +8,12 @@ def generate_clip(video_id, captions, character, student):
     audio = AudioFileClip(f"media/audio/{video_id}/audio_{video_id}.wav")
     duration_in_seconds = audio.duration
 
-
     #BACKGROUND VIDEO
-    full_clip = VideoFileClip("media/backgrounds/parkour1.mp4", audio=False)
-    clip = full_clip.subclipped(30, 32 + duration_in_seconds)
+    random_footage = random.choice(os.listdir("media/background_footage"))
+    full_clip = VideoFileClip(f"media/background_footage/{random_footage}", audio=False)
+    footage_start = randint(5, int(full_clip.duration - duration_in_seconds - 2))
+    clip = full_clip.subclipped(footage_start, footage_start + duration_in_seconds + 2) #make the video extend 2s longer than audio
+
 
     clip = clip.resized(height=1920)
     clip = clip.cropped(x1=1166.6,y1=0,x2=2246.6,y2=1920)
@@ -31,9 +34,9 @@ def generate_clip(video_id, captions, character, student):
         start = item["start"]
         duration = item["end"] - item["start"]
 
-        if item["colour"] == character["colour"]:
+        if item["role"] == "teacher":
             speaking_sprite = teacher_sprite
-        else:
+        elif item["role"] == "student":
             speaking_sprite = student_sprite
 
         # Bright copy of the speaking character
@@ -71,8 +74,8 @@ def generate_clip(video_id, captions, character, student):
         caption_clips.append(txt_clip)
 
     #background music
-    random_choice = random.choice(os.listdir("media/backgrounds/bg_music"))
-    bg_music = AudioFileClip(f"media/backgrounds/bg_music/{random_choice}")
+    random_music = random.choice(os.listdir("media/bg_music"))
+    bg_music = AudioFileClip(f"media/bg_music/{random_music}")
     bg_music = bg_music.subclipped(0, duration_in_seconds) #make bg music same length as video
     bg_music = bg_music.with_volume_scaled(0.08) #lower volume
 
@@ -88,4 +91,4 @@ def generate_clip(video_id, captions, character, student):
 
     final_clip.write_videofile(f"media/completed_videos/testvideo{video_id}.mp4", fps=24, audio_codec="aac")
 
-    return random_choice
+    return random_music

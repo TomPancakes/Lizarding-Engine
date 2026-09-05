@@ -25,12 +25,8 @@ print(f"Using: {character['name']} + {student['name']} on {concept}")
 # Generate Script Block
 ##
 
-preload = input("do you want to begin with test settings? (skip ai gen, use hard code script/audio) ")
-if preload == "no":
-    from generate_script import build_prompt, generate_script
-    script_text = generate_script(build_prompt(character, student, concept))
-    print(script_text, "\n")   
-elif preload == "yes":
+preload = input("Do you want to run in test settings (yes for yes, else enter): ")
+if preload == "yes":
     script_text = """
 STUDENT: Sensei, I dropped my slushie ice in my soda and it floated, which is crazy because I thought heavy frozen stuff should sink like a rock! Like my grades!
 
@@ -40,6 +36,10 @@ TEACHER: It all comes down to density, my goofy friend. Most things get smaller 
 
 STUDENT: Wait, so water is basically cheating at physics? Does it get fat when it gets cold? Like me during winter break? Haha!
     """
+else:
+    from generate_script import build_prompt, generate_script
+    script_text = generate_script(build_prompt(character, student, concept))
+    print(script_text, "\n")  
 
 ##
 # Generate Audio Block
@@ -52,19 +52,29 @@ from generate_audio import generate_audio
 video_id = len(os.listdir("media/audio"))
 os.makedirs(f"media/audio/{video_id}", exist_ok=True)
 
-colour_order = asyncio.run(generate_audio(script_text, character, student, video_id)) #This function actually creates the audio too
+speaking_order = asyncio.run(generate_audio(script_text, character, student, video_id)) #This function actually creates the audio too
 
 audio_path = f"media/audio/{video_id}/audio_{video_id}.wav" #get the path of combined audio now created
 
 ##
 # Generate Captions Block
 ##
-from generate_captions import transcribe
 
-captions = transcribe(audio_path, colour_order) # captions is list of dictionaries. (each with start, end, text keys)
+from updated_captions import generate_captions
 
+caption_length = 8
+
+captions = generate_captions(speaking_order, character, student, caption_length)
 for item in captions[:10]:
-    print(f"id: {item['id']}. start: {item['start']:.2f}. end: {item['end']:.2f}. colour: {item['colour']}. text: {item['text'].strip()}")
+    print(item)
+
+
+#from generate_captions import transcribe
+
+#captions = transcribe(audio_path, colour_order) # captions is list of dictionaries. (each with start, end, text keys)
+
+#for item in captions[:10]:
+#    print(f"id: {item['id']}. start: {item['start']:.2f}. end: {item['end']:.2f}. colour: {item['colour']}. text: {item['text'].strip()}")
 
 ## so if i want to access these later? i being index (which caption ordered), then the key: text
 # captions[i]["text"]
