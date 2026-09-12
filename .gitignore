@@ -1,11 +1,11 @@
 .env
+client_secrets.json
+token.pickle
 __pycache__
 characters.json
 media
 notes.txt
 topics.json
-upload.py
-.venv
-*.pyc
 .venv_cb
-
+old_files
+video_log.txt

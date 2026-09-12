@@ -20,12 +20,12 @@ def generate_clip(video_id, captions, character, student):
 
 
     #SPRITES
-    teacher_sprite = (ImageClip(character["sprite"]).resized(height=600).with_position((50, 280)))
-    student_sprite = (ImageClip(student["sprite"]).resized(height=600).with_position((600, 280)))
+    teacher_sprite = (ImageClip(character["sprite"]).resized(height=800).with_position((50, 280)))
+    student_sprite = (ImageClip(student["sprite"]).resized(height=800).with_position((600, 280)))
 
     #SPRITE OPACITY
-    teacher_dim = teacher_sprite.with_duration(duration_in_seconds).with_opacity(0.3)
-    student_dim = student_sprite.with_duration(duration_in_seconds).with_opacity(0.3)
+    teacher_dim = teacher_sprite.with_duration(duration_in_seconds + 2).with_opacity(0.3)
+    student_dim = student_sprite.with_duration(duration_in_seconds + 2).with_opacity(0.3)
 
     sprite_clips = [teacher_dim, student_dim]
 
@@ -57,11 +57,11 @@ def generate_clip(video_id, captions, character, student):
             TextClip(
                 text=item["text"],
                 font="arial",
-                font_size=50,
+                font_size=60,
                 color=item["colour"],
                 stroke_color="black",
                 stroke_width=5,
-                size=(1060, 400),
+                size=(1060, 600),
                 horizontal_align="center",
                 vertical_align="top",
                 method="caption",
@@ -76,7 +76,7 @@ def generate_clip(video_id, captions, character, student):
     #background music
     random_music = random.choice(os.listdir("media/bg_music"))
     bg_music = AudioFileClip(f"media/bg_music/{random_music}")
-    bg_music = bg_music.subclipped(0, duration_in_seconds) #make bg music same length as video
+    bg_music = bg_music.subclipped(0, duration_in_seconds + 2) #make bg music same length as video
     bg_music = bg_music.with_volume_scaled(0.08) #lower volume
 
     # Combine dialogue + music
