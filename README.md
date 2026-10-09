@@ -6,7 +6,7 @@ A Python pipeline that generates educational YouTube Shorts end to end, in the f
 Channel example: [Lizarding Academy](https://www.youtube.com/@LizardingAcademy)
 
 ## How it works?
-Different files are responsible for different parts of the pipeline. x.py Acts as the orchestrator file, which includes the main loop, and calls each function 
+Different files are responsible for different parts of the pipeline. 'x.py' acts as the orchestrator file, which includes the main loop, and calls each function.
 
 ### Files Responsible for Generating parts of a video: (runs in the following order) 
 - **generate_script:** Generates script, using Google Gemini API. Prompt is built with selected character (and associated traits) & topic selected
@@ -102,9 +102,34 @@ media/
 
 Paths in `characters.json` are relative to the project root, so a sprite at `media/character_models/professor_model.png` is referenced exactly like that.
 
-### Dependencies
+Add your own background footage to `media/background_footage/` and music to `media/bg_music/` before running, as these folders are empty after cloning.
+
+### 3. Dependencies
 - Python 3.11
 
 ```bash
 pip install chatterbox-tts moviepy google-genai google-api-python-client google-auth-oauthlib python-dotenv
 ```
+
+### API credentials
+- **Gemini:** create a `.env` file in the project root containing `GEMINI_API_KEY=your_api_key`
+- **YouTube:** create your own Google Cloud project with the YouTube Data API v3 enabled, then save an OAuth client file (Desktop app) as `client_secrets.json` in the project root. See Google's [Python quickstart](https://developers.google.com/youtube/v3/quickstart/python) for the steps. The first upload opens a browser window to authorise your channel, then saves a `token.pickle` file so you only have to do this once.
+
+### Running
+```bash
+python x.py
+```
+
+Select 'Auto' to Generate a defined number of videos in succession. Select 'Manual' for one at a time with more precision. (select characters & topic)
+
+
+## Notes
+- Generation is slow. On CPU, generation is roughly 10 minutes per 1 minute short.
+- By default this program runs Chatterbox on CPU. If you have a NVIDIA GPU, you can edit generate_audio to use device="cuda" instead of CPU for improved performance
+- Videos upload as **private** by default. Change `privacyStatus` in `upload.py` to publish them. (Though I'd advise against this since you never know what the AI will come up with)
+- The upload description states that AI was used for the script and voices.
+- `done` in `topics.json` is updated automatically after each video.
+- Characters, images and music are not included. You are responsible for having the rights to anything you use and for crediting sources.
+- As this program uses the free Gemini model, it may run into model busy errors. The program is built to wait and retry when it hits these exceptions, however, if after 7 attempts the model is still busy, the program will terminate.
+- Generate_script uses one of 2 prompt styles. One is more traditional, one asks the LLM to make use of a strong hook. Which prompt is used is randomised. I did this to see if I could improve viewer retention.
+
