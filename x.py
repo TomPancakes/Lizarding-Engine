@@ -35,7 +35,7 @@ def generation_pipeline(character, student, concept, video_id):
     script_text = None
     tries = 0
     time_increment = 0
-    while tries < 5:
+    while tries < 7:
         try:
             script_text = generate_script(prompt)
             break

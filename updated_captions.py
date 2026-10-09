@@ -1,6 +1,5 @@
 #this simplified version of the captions will break the raw script into approximate chunks
-#rather than usinig whisper which generates captions too large short short form content
-
+#rather than using whisper which generates captions too large for short form content
 
 #speaking order: precise start and end time for each character. 
 
@@ -33,8 +32,6 @@ def generate_captions(speaking_order, character, student, max_length):
             chunk_start = chunk_end
 
     return caption_list
-
-
 
 
 #{'character': 'Sara', 'role': 'student', 'text': 'Sensei, I dropped my slushie ice in my soda and it floated, which is crazy because I thought heavy frozen stuff should sink like a rock! Like my grades!', 'start': 0, 'end': 10.08}
