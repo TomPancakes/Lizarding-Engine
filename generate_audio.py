@@ -6,8 +6,8 @@ import os
 
 async def generate_audio(script_text, character, student, video_id):
 
-    audio_files = []
-    speaker_order = []
+    audio_files = [] # list of audio fil paths
+    speaker_order = [] # list of each individual lines for later caption use
 
     if character['voice']['provider'] == "chatterbox" or student['voice']['provider'] == "chatterbox": #load the nano model IF to be used
         import torchaudio as ta
